@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  backend:
+    build: .
+    ports: 
+      - "5000:8080"
+  db:
+    image: postgres:12.2-alpine
+    ports: 
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data  
+    environment:
+      - POSTGRES_PASSWORD=test
+volumes:
+  db-data:
