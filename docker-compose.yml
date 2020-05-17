@@ -2,15 +2,50 @@ version: "3.7"
 services:
   backend:
     build: .
-    ports: 
-      - "5000:8080"
-  db:
+    ports:
+      - "5000:5000"
+    networks:
+      - internal-net
+      - external-net
+    depends_on:
+      - keycloak
+      - toal-db
+    env_file:
+      - .env
+  toal-db:
     image: postgres:12.2-alpine
-    ports: 
-      - "5432:5432"
+    networks:
+      - internal-net
     volumes:
-      - db-data:/var/lib/postgresql/data  
-    environment:
-      - POSTGRES_PASSWORD=test
+      - db-data:/var/lib/postgresql/db-data
+    env_file:
+      - .env
+  keycloak-postgres:
+    image: postgres:12.2-alpine
+    volumes:
+      - keycloak-data:/var/lib/postgresql/keycloak-data
+    networks:
+      - internal-net
+    env_file:
+      - keycloak.env
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    networks:
+      - internal-net
+      - external-net
+    depends_on:
+      - keycloak-postgres
+    ports:
+      - 8080:8080
+    env_file:
+      - keycloak.env
 volumes:
   db-data:
+  keycloak-data:
+
+networks:
+  internal-net:
+    driver: bridge
+    internal: true
+  external-net:
+    driver: bridge
